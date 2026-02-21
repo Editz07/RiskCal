@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Futures Risk Calculator</title>
+  <title>Futures Risk Calculator V2</title>
   <style>
     body {
       margin: 0;
@@ -14,49 +14,135 @@
       background: #ffffff;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
     }
+    /* Main card with glass, rounded, shadow, and animated border */
     .card {
       width: 400px;
       padding: 32px;
-      border-radius: 12px;
-      background: #f9f9f9;
-      border: 1px solid #ccc;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      color: #000;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.2);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(8px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+      position: relative;
+      overflow: hidden;
+      border: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
+
+    /* Reflection overlay for the card */
+    .card::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 50%;
+      background: linear-gradient(to bottom, rgba(255,255,255,0.4), transparent);
+      border-radius: 20px;
+      pointer-events: none;
+    }
+
+    /* Heading styles */
     h1 {
       text-align: center;
       margin-bottom: 24px;
     }
+
+    /* Labels styling */
     label {
       display: block;
       margin-top: 16px;
       font-size: 14px;
+      width: 100%;
     }
-    select, input {
+
+    /* Inputs and selects with neumorphism, translucent, bouncy, and transition effects */
+    input, select {
       width: 100%;
       margin-top: 8px;
-      padding: 12px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
+      padding: 14px;
+      border-radius: 16px;
+      border: none;
       font-size: 16px;
+      background: rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(4px);
+      box-shadow: inset 4px 4px 8px rgba(0,0,0,0.1),
+                  inset -4px -4px 8px rgba(255,255,255,0.7);
+      transition: all 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+      box-sizing: border-box;
     }
-    .result {
+
+    /* Bouncy and elastic effects on focus/active */
+    input:focus, select:focus {
+      outline: none;
+      animation: bounce 0.3s ease;
+    }
+    button:active {
+      animation: bounce 0.3s ease;
+    }
+
+    /* Bouncy keyframes */
+    @keyframes bounce {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    /* Liquid ripple hover effect */
+    button, select, input {
+      position: relative;
+      overflow: hidden;
+    }
+    button:hover::after,
+    select:hover::after,
+    input:hover::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 200%;
+      height: 200%;
+      background: rgba(255,255,255,0.3);
+      border-radius: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      animation: ripple 0.6s linear;
+    }
+    @keyframes ripple {
+      to {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0;
+      }
+    }
+
+    /* Style for the total risk label - centered and above the amount */
+    .risk-label {
       margin-top: 24px;
-      padding: 16px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      background: #f1f1f1;
+      font-size: 14px;
+      font-weight: 600;
+      color: #000;
       text-align: center;
     }
-    .result span {
-      display: block;
+
+    /* Style for the risk display card with outline, backdrop blur, and rounded shape */
+    .risk-card {
       margin-top: 8px;
+      padding: 16px;
+      border-radius: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      background: rgba(255,255,255,0.1);
+      text-align: center;
+      backdrop-filter: blur(4px);
+      font-size: 20px;
+      font-weight: 600;
+      width: 100%;
     }
   </style>
 </head>
 <body>
   <div class="card">
-    <h1>Futures Risk Calculator</h1>
+    <h1>Futures Risk Calculator V2</h1>
 
     <label>Instrument</label>
     <select id="instrument"></select>
@@ -67,11 +153,10 @@
     <label>Stop Loss (points)</label>
     <input type="number" id="stop" value="8" min="0" />
 
-    <div class="result">
-      <span><strong>Stop Loss:</strong> <span id="outStop"></span> points</span>
-      <span><strong>Contracts:</strong> <span id="outContracts"></span></span>
-      <span><strong>Account Risk:</strong> $<span id="outRisk"></span></span>
-    </div>
+    <!-- Centered label above the risk amount -->
+    <div class="risk-label">Total Risk</div>
+    <!-- Risk display in a styled outlined card -->
+    <div class="risk-card" id="riskDisplay">$0.00</div>
   </div>
 
   <script>
@@ -91,10 +176,7 @@
     const instrumentSelect = document.getElementById("instrument");
     const contractsInput = document.getElementById("contracts");
     const stopInput = document.getElementById("stop");
-
-    const outStop = document.getElementById("outStop");
-    const outContracts = document.getElementById("outContracts");
-    const outRisk = document.getElementById("outRisk");
+    const riskDisplay = document.getElementById("riskDisplay");
 
     Object.entries(instruments).forEach(([key, v]) => {
       const opt = document.createElement("option");
@@ -111,16 +193,14 @@
       const stop = Number(stopInput.value) || 0;
 
       const risk = stop * instruments[instrument].pointValue * contracts;
-
-      outStop.textContent = stop;
-      outContracts.textContent = contracts;
-      outRisk.textContent = risk.toFixed(2);
+      riskDisplay.textContent = `$${risk.toFixed(2)}`;
     }
 
     instrumentSelect.addEventListener("change", calculate);
     contractsInput.addEventListener("input", calculate);
     stopInput.addEventListener("input", calculate);
 
+    // Initial calculation
     calculate();
   </script>
 </body>
