@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Futures Risk Calculator V2</title>
+<title>Futures Risk Calculator V2.1</title>
 <style>
   body {
     margin: 0;
@@ -136,7 +136,7 @@
 </head>
 <body>
   <div class="card" id="parallaxCard">
-    <h1>Futures Risk Calculator V2</h1>
+    <h1>Futures Risk Calculator V2.1</h1>
     <label>Instrument</label>
     <select id="instrument"></select>
     <label>Contracts</label>
@@ -184,12 +184,12 @@
 
   // Your existing script to populate instruments and calculate risk
   const instruments = {
-    NQ: { label: "Nasdaq (NQ)", pointValue: 20 },
-    MNQ: { label: "Micro Nasdaq (MNQ)", pointValue: 2 },
-    YM: { label: "Dow Jones (YM)", pointValue: 5 },
-    MYM: { label: "Micro Dow (MYM)", pointValue: 0.5 },
-    GOLD: { label: "Gold (GC)", pointValue: 10 },
-    MGC: { label: "Micro Gold (MGC)", pointValue: 1 }
+    NQ: { label: "Nasdaq (NQM)", pointValue: 20 },
+    MNQ: { label: "Micro Nasdaq (MNQM)", pointValue: 2 },
+    YM: { label: "Dow Jones (YMM)", pointValue: 5 },
+    MYM: { label: "Micro Dow (MYMM)", pointValue: 0.5 },
+    GOLD: { label: "Gold (GCJ)", pointValue: 10 },
+    MGC: { label: "Micro Gold (MGCJ)", pointValue: 1 }
   };
 
   const instrumentSelect = document.getElementById("instrument");
